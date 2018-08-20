@@ -5,27 +5,36 @@ import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 
-public class MapSprite implements ISprite{
+import java.util.UUID;
 
+public class MapSprite implements ISprite {
+
+    private final UUID ID;
     private BitmapDrawable image;
-    private Rect mapRect;
 
-    public MapSprite(BitmapDrawable bmp, int dimension){
+    MapSprite(BitmapDrawable bmp, int dimension) {
         image = bmp;
         image.setTileModeX(Shader.TileMode.REPEAT);
         image.setTileModeY(Shader.TileMode.REPEAT);
         int mapWidth = GameScreen.WIDTH_COUNT * dimension;
         int mapHeight = GameScreen.HEIGHT_COUNT * dimension;
-        mapRect = new Rect(0, 0, mapWidth, mapHeight);
+        Rect mapRect = new Rect(0, 0, mapWidth, mapHeight);
         image.setBounds(mapRect);
+        ID = UUID.randomUUID();
     }
 
     @Override
-    public void draw(Canvas canvas){
+    public UUID getID() {
+        return ID;
+    }
+
+    @Override
+    public void draw(Canvas canvas) {
         image.draw(canvas);
     }
+
     @Override
-    public void update(){
+    public void update() {
         return;
     }
 
