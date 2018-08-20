@@ -1,11 +1,7 @@
 package com.example.gilroy.sneako;
 
 import android.app.Activity;
-import android.content.Context;
-import android.nfc.Tag;
 import android.os.Bundle;
-import android.support.v4.view.MotionEventCompat;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,8 +16,8 @@ public class GameScreen extends Activity {
     static float SCREEN_DENSITY;
     static float SCREEN_WIDTH;
     static float SCREEN_HEIGHT;
-    static int HEIGHT_COUNT = 8;
-    static int WIDTH_COUNT = 6;
+    static int HEIGHT_COUNT = 10;
+    static int WIDTH_COUNT = 8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +33,9 @@ public class GameScreen extends Activity {
         setContentView(gameView);
         mgst = new GestureDetector(this, gameView);
         gameView.setOnTouchListener(gameListener);
+
     }
+
 
     View.OnTouchListener gameListener = new View.OnTouchListener() {
         @Override
