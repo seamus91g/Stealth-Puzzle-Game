@@ -17,41 +17,44 @@ public class MapNode {
         neighbours = new ArrayList<>();
     }
 
-    int xPosition() {
+    public int xPosition() {
         return position.x;
     }
 
-    int yPosition() {
+    public int yPosition() {
         return position.y;
     }
 
-    void addNeighbour(MapNode nb) {
+    public void addNeighbour(MapNode nb) {
         neighbours.add(nb);
     }
 
-    int getNeighbourSize() {
+    public int getNeighbourSize() {
         return neighbours.size();
     }
 
-    MapNode getNeighbour(int index) {
+    public MapNode getNeighbour(int index) {
         return neighbours.get(index);
     }
 
-    int getWaypointCount() {
+    public int getWaypointCount() {
         return waypoints.size();
     }
 
-    void addWaypoint(Waypoint wp) {
+    public Waypoint getWaypoint(int index) {
+        return waypoints.get(index);
+    }
+
+    public void addWaypoint(Waypoint wp) {
         waypoints.add(wp);
     }
 
-    void removeWaypoint(int index) {
+    public void removeWaypoint(int index) {
         waypoints.remove(index);
     }
 
-    void removeTopWaypoint() {
-        waypoints.remove(waypoints.size() - 1);
+    public void removeTopWaypoint() {
+        removeWaypoint(waypoints.size() - 1);
     }
-
 }
 

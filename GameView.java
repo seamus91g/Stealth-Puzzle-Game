@@ -29,7 +29,7 @@ class GameView extends SurfaceView implements
         SurfaceHolder.Callback,
         GestureDetector.OnDoubleTapListener,
         GestureDetector.OnGestureListener {
-    private static final String TAG = "LogTag";
+    public static final String TAG = "LogTag";
     private static final String TAG_AC = "Debug2";
     private MainThread thread;
     Map<UUID, ISprite> sprites = new LinkedHashMap<>();     // Drawing order is important
@@ -263,23 +263,33 @@ class GameView extends SurfaceView implements
         // Array of all nodes. Check if already clicked, or if on top
         // Store first waypoint node, can then step through waypoints
         // node = allnodes[clickregion]
-        printDeets("Start tap");
+//        printDeets("Start tap");
         MapNode clickedNode = mapNodes[clickRegion.x][clickRegion.y];
         // if innacessible square
         //      do nothing
         // if wayPoints == empty
-//        if (topWaypoint == null){
+        if (topWaypoint == null) {
 //            //      add node
 //
-//        }else if(clickedNode.equals(topWaypoint.getWaypointNode())){
-//            // Remove all route nodes between clicked and previous
-//            MapNode previous = topWaypoint.prevWP.getWaypointNode();
-//            while(!route.peekLast().equals(previous)){
-//                route.removeLast();                 //
-//            }
-//            clickedNode.removeTopWaypoint();    //
-//            return false;
-//        }else{
+        } else if (clickedNode.equals(topWaypoint.getWaypointNode())) {
+            // Remove all route nodes between clicked and previous
+            sprites.remove(topWaypoint.getID());
+            MapNode previous;
+            topWaypoint.delete();
+            if (topWaypoint.getPrevWP() == null) {
+                previous = route.get(0);
+                topWaypoint = null;
+            } else {
+                previous = topWaypoint.getPrevWP().getWaypointNode();
+                topWaypoint = topWaypoint.getPrevWP();
+            }
+            while (!route.peekLast().equals(previous)) {
+                route.removeLast();                 //
+            }
+            clickedNode.removeTopWaypoint();    //
+            return false;
+        }
+//          else{
 //
 //        }
         List<MapNode> pathToTake = travel(route.getLast(), clickedNode);
@@ -306,14 +316,14 @@ class GameView extends SurfaceView implements
                 clickRegion.y * tileHeight,
                 clickedNode,
                 topWaypoint);
-        if (topWaypoint != null) {
-            topWaypoint.setNextWP(waypoint);
-        }
-        clickedNode.addWaypoint(waypoint);
+//        if (topWaypoint != null) {
+//            topWaypoint.setNextWP(waypoint);
+//        }
+//        clickedNode.addWaypoint(waypoint);
         topWaypoint = waypoint;
         sprites.put(waypoint.getID(), waypoint);
 
-        printDeets("End tap");
+//        printDeets("End tap");
         Log.d(TAG, "[~~~~~~~~~~~~~~~~~~~~~~~~~~~]");
         return false;
     }
@@ -386,7 +396,7 @@ class GameView extends SurfaceView implements
 
     @Override
     public void onLongPress(MotionEvent e) {
-//        Log.d(TAG, "Action was onLongPress");
+        Log.d(TAG, "Action was onLongPress");
 
     }
 
