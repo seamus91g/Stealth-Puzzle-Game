@@ -45,7 +45,12 @@ public class Waypoint implements ISprite {
     }
 
     private void updateWPOrder() {
-        Waypoint wp = this;         // TODO: Why include this if this is being deleted
+        Waypoint wp;
+        if(this.prevWP != null) {
+            wp = this.prevWP;
+        }else{
+            wp = this.nextWP;
+        }
         while (wp.prevWP != null) {
             wp = wp.getPrevWP();
         }

@@ -18,6 +18,7 @@ import android.view.SurfaceView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -255,6 +256,53 @@ class GameView extends SurfaceView implements
     }
 
     @Override
+    public void onLongPress(MotionEvent e) {
+        Log.d(TAG, "Action was onLongPress");
+        Position clickRegion = clickRegion(e);
+        if (clickRegion.x == -1) {
+            return;
+        }
+        MapNode clickedNode = mapNodes[clickRegion.x][clickRegion.y];
+        // if no waypoints, return
+        // if top waypoint, no stack, return
+        // if top waypoint, stack, remove next highest from stack
+        if (clickedNode.getWaypointCount() == 0
+                || (clickedNode.getWaypointCount() == 1 && clickedNode.getWaypoint(0).equals(topWaypoint)))
+            return;
+        Waypoint deleteWP;
+        if (clickedNode.getWaypoint(clickedNode.getWaypointCount() - 1).equals(topWaypoint)) {
+            deleteWP = clickedNode.getWaypoint(clickedNode.getWaypointCount() - 2);
+        } else {
+            deleteWP = clickedNode.getWaypoint(clickedNode.getWaypointCount() - 1);
+        }
+
+        deleteWP.delete();
+        sprites.remove(deleteWP.getID());
+        Iterator<MapNode> it = route.iterator();
+        MapNode mn = it.next();
+        MapNode prev;
+        if (deleteWP.getPrevWP() != null) {
+            prev = deleteWP.getPrevWP().getWaypointNode();
+        } else {
+            prev = mn;
+        }
+        List<MapNode> newPathSlice = travel(prev, deleteWP.getNextWP().getWaypointNode());
+        // Get prev Wp and next Wp. Find path between them. Insert this path into middle of route LinkedList
+        int index = 0;
+        while (!mn.equals(prev)) {
+            mn = it.next();
+            ++index;
+        }
+        it.next();
+        while (!mn.equals(deleteWP.getNextWP().getWaypointNode())) {
+            it.remove();
+            mn = it.next();
+        }
+        it.remove();
+        route.addAll(index + 1, newPathSlice);
+    }
+
+    @Override
     public boolean onSingleTapUp(MotionEvent event) {
         Position clickRegion = clickRegion(event);
         if (clickRegion.x == -1) {
@@ -394,11 +442,6 @@ class GameView extends SurfaceView implements
         return resizedBitmap;
     }
 
-    @Override
-    public void onLongPress(MotionEvent e) {
-        Log.d(TAG, "Action was onLongPress");
-
-    }
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
