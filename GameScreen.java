@@ -16,8 +16,6 @@ public class GameScreen extends Activity {
     static float SCREEN_DENSITY;
     static float SCREEN_WIDTH;
     static float SCREEN_HEIGHT;
-    static int HEIGHT_COUNT = 10;
-    static int WIDTH_COUNT = 8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
