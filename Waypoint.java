@@ -7,12 +7,9 @@ import android.graphics.Paint;
 
 import java.util.UUID;
 
-public class Waypoint implements ISprite {
+public class Waypoint {
     private static int waypointCount = 0;
     private final UUID ID;
-    private final Bitmap waypoint;
-    private int vertDisp;
-    private int horzDisp;
     private int pauseCount = 0;
     private int wpOrderNumber;
     private Waypoint prevWP;
@@ -42,6 +39,10 @@ public class Waypoint implements ISprite {
             nextWP.prevWP = prevWP;
         }
         updateWPOrder();
+    }
+
+    public int findStackHeight(){
+        return wpOrderNumber;
     }
 
     private void updateWPOrder() {
@@ -79,12 +80,11 @@ public class Waypoint implements ISprite {
             }
         }
     }
+    public int findLabelDrawShift(){
+        return drawShift;
+    }
 
-    public Waypoint(Bitmap bitmap, int across, int down, MapNode node, Waypoint prev) {
-        waypoint = bitmap.copy(bitmap.getConfig(), true);
-        int edgeDistance = (GameView.tileHeight - bitmap.getHeight()) / 2;
-        vertDisp = down + edgeDistance;
-        horzDisp = across + edgeDistance;
+    public Waypoint(MapNode node, Waypoint prev) {
         ID = UUID.randomUUID();
         this.wpLocation = node;
         this.prevWP = prev;
@@ -99,31 +99,20 @@ public class Waypoint implements ISprite {
     public MapNode getWaypointNode() {
         return wpLocation;
     }
+    public Position getPosition(){
+        return wpLocation.getPosition();
+    }
 
-    @Override
+//    @Override
     public UUID getID() {
         return ID;
     }
 
-    @Override
-    public void draw(Canvas canvas) {
-        canvas.drawBitmap(waypoint, horzDisp, vertDisp, null);
-        Paint paint = new Paint();
-        paint.setStyle(Paint.Style.FILL);
-        paint.setStrokeWidth(1);
-        paint.setColor(Color.BLACK);
-        paint.setTextSize(20);
-        String msg;
-        if (drawShift > 0) {
-            msg = "," + String.valueOf(wpOrderNumber);
-        } else {
-            msg = String.valueOf(wpOrderNumber);
-        }
-        canvas.drawText(msg, horzDisp + 10 + drawShift, vertDisp + 25, paint);
-    }
+//    @Override
 
-    @Override
-    public void update() {
 
-    }
+//    @Override
+//    public void update() {
+//
+//    }
 }

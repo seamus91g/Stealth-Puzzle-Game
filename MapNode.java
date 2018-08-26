@@ -2,6 +2,7 @@ package com.example.gilroy.sneako;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MapNode {
     private final Position position;
@@ -17,6 +18,9 @@ public class MapNode {
         neighbours = new ArrayList<>();
     }
 
+    public Position getPosition(){
+        return position;
+    }
     public int xPosition() {
         return position.x;
     }
@@ -55,6 +59,15 @@ public class MapNode {
 
     public void removeTopWaypoint() {
         removeWaypoint(waypoints.size() - 1);
+    }
+
+    public void removeWaypoint(UUID id) {
+        for (int i=0; i<waypoints.size(); ++i) {
+            if(waypoints.get(i).getID() == id){
+                waypoints.remove(i);
+                return;
+            }
+        }
     }
 }
 
