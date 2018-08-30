@@ -41,8 +41,7 @@ public class PlayerSprite extends PlayerNav implements ISprite {
         super(insertionPoint, tileHeight);
         this.tileHeight = tileHeight;
         ID = UUID.randomUUID();
-        playerPosition.x = insertionPoint.getPosition().x * tileHeight;
-        playerPosition.y = insertionPoint.getPosition().y * tileHeight;
+        playerPosition = new Position(insertionPoint.getPosition(), tileHeight);
         Bitmap bmp = BitmapFactory.decodeResource(resources, R.drawable.selection_reticule_green);
         bmp = LevelConstructsSprite.getResizedBitmap(bmp, (4 * tileHeight) / 5, (4 * tileHeight) / 5);    // 80% size of tile
         waypoint = bmp;
@@ -55,7 +54,7 @@ public class PlayerSprite extends PlayerNav implements ISprite {
         playerStatus = Status.Wait;
         routeIndex = 0;
         pendingDistance = 0;
-        playerPosition = new Position(route.get(0).getPosition());
+        playerPosition = new Position(route.get(0).getPosition(), tileHeight);
         playerDirection = Direction.Down;
     }
 

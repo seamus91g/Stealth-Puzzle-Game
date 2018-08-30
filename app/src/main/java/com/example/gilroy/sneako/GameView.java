@@ -26,63 +26,28 @@ class GameView extends SurfaceView implements
     Map<UUID, ISprite> sprites = new LinkedHashMap<>();     // Drawing order is important
     int viewBuffer = 150;       // Margin space to allow for view window outside of map area
     boolean mapScroll = false;
-    int[][][] wallmatrix;
-    int numAllies;
     MapSprite map;
     LevelConstructsSprite level;
     PlayerSprite currentlyActive;
     List<PlayerSprite> allies = new ArrayList<>();
-    int flag = 1;
 
-    {
-        numAllies = 1;
-        wallmatrix = new int[][][]{
-                // Horizontal walls
-                {
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 1, 1, 1, 1, 1, 1, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 1, 1, 0},
-                        {0, 0, 1, 1, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 1, 1, 1, 0},
-                        {0, 0, 0, 0, 0, 1, 1, 0},
-                        {0, 1, 1, 1, 0, 1, 1, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0}},
-                // Vertical walls
-                {
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                        {0, 1, 0, 1, 0, 0, 0, 0},
-                        {1, 0, 0, 1, 0, 1, 0, 0},
-                        {1, 1, 0, 1, 0, 1, 0, 0},
-                        {1, 1, 0, 1, 0, 0, 0, 0},
-                        {1, 0, 0, 1, 0, 0, 0, 0},
-                        {0, 1, 0, 1, 0, 0, 0, 0},
-                        {0, 0, 0, 0, 0, 0, 0, 0},
-                }
-        };
-    }
-
-    public GameView(Context context) {
+    public GameView(Context context, GameSetup gameSetup) {
         super(context);
         // Initialise the map
-        map = new MapSprite(wallmatrix, getResources());
-        level = new LevelConstructsSprite(wallmatrix, map.getTileHeight());
+        map = new MapSprite(gameSetup.wallmatrix, getResources());
+        level = new LevelConstructsSprite(gameSetup.wallmatrix, map.getTileHeight());
         sprites.put(map.getID(), map);
         sprites.put(level.getID(), level);
-//        this.pixelDensity = GameScreen.SCREEN_DENSITY;
         getHolder().addCallback(this);
         thread = new MainThread(getHolder(), this);
         setFocusable(true);
-        initialiseAllies();
+        initialiseAllies(gameSetup.numAllies);
     }
 
-    private void initialiseAllies() {
+    private void initialiseAllies(int numAllies) {
         PlayerSprite ally;
-        for (int i=0; i<numAllies; ++i){
-            ally = new PlayerSprite(level.getInsertionPoint(), map.getTileHeight(), getResources());
+        for (int i = 0; i < numAllies; ++i) {
+            ally = new PlayerSprite(level.getNode(new Position(i, 0)), map.getTileHeight(), getResources());
             sprites.put(ally.getID(), ally);
             allies.add(ally);
             currentlyActive = ally;
@@ -133,14 +98,15 @@ class GameView extends SurfaceView implements
         }
     }
 
-    public void startAction(){
+    public void startAction() {
         resetAction();
-        for(PlayerSprite ps : allies){
+        for (PlayerSprite ps : allies) {
             ps.beginMove();
         }
     }
-    public void resetAction(){
-        for(PlayerSprite ps : allies){
+
+    public void resetAction() {
+        for (PlayerSprite ps : allies) {
             ps.resetPlayer();
         }
     }
@@ -169,16 +135,16 @@ class GameView extends SurfaceView implements
     @Override
     public void onLongPress(MotionEvent e) {
         Log.d(TAG, "Action was onLongPress");
-        if (map.clickRegion(e).x == -1){
+        if (map.clickRegion(e).x == -1) {
             return;
         }
         MapNode clickedNode = level.getNode(map.clickRegion(e));
         // ActiveCharacter.removeWaypoint();
         // TODO: Must be able remove stacked waypoint even on top node
-        if(clickedNode.getWaypointCount() == 0){
+        if (clickedNode.getWaypointCount() == 0) {
             return;
         }
-        if(clickedNode.getWaypoint(0).equals(currentlyActive.getTopWaypoint())){
+        if (clickedNode.getWaypoint(0).equals(currentlyActive.getTopWaypoint())) {
             return;
         }
         resetAction();
@@ -187,7 +153,7 @@ class GameView extends SurfaceView implements
 
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
-        if (map.clickRegion(event).x == -1){
+        if (map.clickRegion(event).x == -1) {
             Log.d(TAG, "Out of bounds!~");
             return false;
         }
@@ -200,7 +166,7 @@ class GameView extends SurfaceView implements
                 && clickedNode.equals(currentlyActive.getTopWaypoint().getWaypointNode())) {
             Log.d(TAG, "Removing!");
             currentlyActive.removeWaypoint(clickedNode);
-        }else{
+        } else {
             Log.d(TAG, "Adding!");
             currentlyActive.addWaypoint(clickedNode);
         }
@@ -262,4 +228,7 @@ class GameView extends SurfaceView implements
         }
     }
 
+    public void changeActivePlayer(int tag) {
+        currentlyActive = allies.get(tag);
+    }
 }

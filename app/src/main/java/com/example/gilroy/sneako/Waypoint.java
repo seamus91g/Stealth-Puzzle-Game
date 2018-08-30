@@ -8,10 +8,10 @@ import android.graphics.Paint;
 import java.util.UUID;
 
 public class Waypoint {
-    private static int waypointCount = 0;
+//    private static int waypointCount = 0;
     private final UUID ID;
     private int pauseCount = 0;
-    private int wpOrderNumber;
+    private int wpOrderNumber = 1;  // Default. Over-written if previous node
     private Waypoint prevWP;
     private Waypoint nextWP;
     private MapNode wpLocation;
@@ -27,7 +27,7 @@ public class Waypoint {
 
     void delete() {
         if (nextWP == null && prevWP == null) {
-            waypointCount = 0;
+//            waypointCount = 0;
             return;
         }
         if (nextWP == null) {
@@ -63,7 +63,7 @@ public class Waypoint {
             wp = wp.nextWP;
             ++count;
         }
-        waypointCount = count - 1;
+//        waypointCount = count - 1;
     }
 
     private void calculateIndexDrawShfit() {
@@ -90,10 +90,11 @@ public class Waypoint {
         this.prevWP = prev;
         if (prev != null) {
             prev.nextWP = this;
+            wpOrderNumber = prev.wpOrderNumber +1;
         }
         node.addWaypoint(this);
         calculateIndexDrawShfit();
-        wpOrderNumber = ++waypointCount;
+//        wpOrderNumber = ++waypointCount;
     }
 
     public MapNode getWaypointNode() {

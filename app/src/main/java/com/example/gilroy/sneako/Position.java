@@ -13,4 +13,8 @@ class Position {
         this.x = position.x;
         this.y = position.y;
     }
+    Position(Position position, int scaleFactor){
+        this.x = position.x*scaleFactor;
+        this.y = position.y*scaleFactor;
+    }
 }

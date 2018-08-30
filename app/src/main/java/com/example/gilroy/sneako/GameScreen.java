@@ -11,11 +11,15 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import java.util.HashMap;
+
+import java.util.Map;
 public class GameScreen extends Activity {
 
     private static final String TAG = "LogTag";
     GestureDetector mgst;
     GameView gameView;
+    Map<String, Integer> playerTags = new HashMap<>();
 
     static float SCREEN_DENSITY;
     static float SCREEN_WIDTH;
@@ -32,19 +36,31 @@ public class GameScreen extends Activity {
         SCREEN_HEIGHT = this.getResources().getDisplayMetrics().heightPixels;
 
         FrameLayout gameFrame = new FrameLayout(this);
-        gameView = new GameView(this);
+        GameSetup gameSetup = new GameSetup();
+        gameView = new GameView(this, gameSetup);
         LinearLayout buttons = new LinearLayout(this);
 
         Button startButton = new Button(this);
         Button resetButton = new Button(this);
-        int width = 100;
+
+//        int width = 100;
         startButton.setText("Start");
-//        startButton.setWidth(width);
         resetButton.setText("Reset");
-//        resetButton.setWidth(width);
 
         buttons.addView(startButton);
         buttons.addView(resetButton);
+        if(gameSetup.numAllies > 1){
+            for(int i=0; i<gameSetup.numAllies; ++i){
+                Button playerX = new Button(this);
+                String tag = "Player_" + i;
+                playerX.setTag(tag);
+                playerX.setText("" + (i+1));
+                playerX.setOnClickListener(changePlayerListener);
+                buttons.addView(playerX);
+                playerTags.put(tag, i);
+            }
+        }
+
         gameFrame.addView(gameView);
         gameFrame.addView(buttons);
 
@@ -60,6 +76,13 @@ public class GameScreen extends Activity {
         @Override
         public void onClick(View v) {
             gameView.startAction();
+        }
+    };
+    private View.OnClickListener changePlayerListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String tag = (String) v.getTag();
+            gameView.changeActivePlayer(playerTags.get(tag));
         }
     };
     private View.OnClickListener resetListener = new View.OnClickListener() {
