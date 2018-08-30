@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +31,11 @@ class GameView extends SurfaceView implements
     MapSprite map;
     LevelConstructsSprite level;
     PlayerSprite currentlyActive;
+    List<PlayerSprite> allies = new ArrayList<>();
+    int flag = 1;
 
     {
-        numAllies = 2;
+        numAllies = 1;
         wallmatrix = new int[][][]{
                 // Horizontal walls
                 {
@@ -81,6 +84,7 @@ class GameView extends SurfaceView implements
         for (int i=0; i<numAllies; ++i){
             ally = new PlayerSprite(level.getInsertionPoint(), map.getTileHeight(), getResources());
             sprites.put(ally.getID(), ally);
+            allies.add(ally);
             currentlyActive = ally;
         }
     }
@@ -129,6 +133,18 @@ class GameView extends SurfaceView implements
         }
     }
 
+    public void startAction(){
+        resetAction();
+        for(PlayerSprite ps : allies){
+            ps.beginMove();
+        }
+    }
+    public void resetAction(){
+        for(PlayerSprite ps : allies){
+            ps.resetPlayer();
+        }
+    }
+
     /* OnGestureListener */
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
@@ -165,6 +181,7 @@ class GameView extends SurfaceView implements
         if(clickedNode.getWaypoint(0).equals(currentlyActive.getTopWaypoint())){
             return;
         }
+        resetAction();
         currentlyActive.removeWaypoint(clickedNode);
     }
 
@@ -178,6 +195,7 @@ class GameView extends SurfaceView implements
         // Array of all nodes. Check if already clicked, or if on top
         // Store first waypoint node, can then step through waypoints
         // node = allnodes[clickregion]
+        resetAction();
         if (currentlyActive.getTopWaypoint() != null
                 && clickedNode.equals(currentlyActive.getTopWaypoint().getWaypointNode())) {
             Log.d(TAG, "Removing!");

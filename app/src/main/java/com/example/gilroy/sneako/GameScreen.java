@@ -7,11 +7,15 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 public class GameScreen extends Activity {
 
     private static final String TAG = "LogTag";
     GestureDetector mgst;
+    GameView gameView;
 
     static float SCREEN_DENSITY;
     static float SCREEN_WIDTH;
@@ -27,12 +31,43 @@ public class GameScreen extends Activity {
         SCREEN_WIDTH = this.getResources().getDisplayMetrics().widthPixels;
         SCREEN_HEIGHT = this.getResources().getDisplayMetrics().heightPixels;
 
-        GameView gameView = new GameView(this);
-        setContentView(gameView);
+        FrameLayout gameFrame = new FrameLayout(this);
+        gameView = new GameView(this);
+        LinearLayout buttons = new LinearLayout(this);
+
+        Button startButton = new Button(this);
+        Button resetButton = new Button(this);
+        int width = 100;
+        startButton.setText("Start");
+//        startButton.setWidth(width);
+        resetButton.setText("Reset");
+//        resetButton.setWidth(width);
+
+        buttons.addView(startButton);
+        buttons.addView(resetButton);
+        gameFrame.addView(gameView);
+        gameFrame.addView(buttons);
+
+        setContentView(gameFrame);
         mgst = new GestureDetector(this, gameView);
         gameView.setOnTouchListener(gameListener);
 
+        startButton.setOnClickListener(startListener);
+        resetButton.setOnClickListener(resetListener);
     }
+
+    private View.OnClickListener startListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            gameView.startAction();
+        }
+    };
+    private View.OnClickListener resetListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            gameView.resetAction();
+        }
+    };
 
 
     View.OnTouchListener gameListener = new View.OnTouchListener() {
