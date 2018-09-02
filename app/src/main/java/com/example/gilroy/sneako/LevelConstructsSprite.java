@@ -47,10 +47,6 @@ public class LevelConstructsSprite implements ISprite {
 
     }
 
-    public MapNode getInsertionPoint() {
-        return level.getInsertionPoint();
-    }
-
     public MapNode getNode(Position position) {
         return level.getNode(position);
     }

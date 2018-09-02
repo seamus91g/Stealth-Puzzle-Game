@@ -7,23 +7,26 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class PlayerSprite extends PlayerNav implements ISprite {
-    private final UUID ID;
 
-    private final Bitmap waypoint;
+    private final Bitmap waypointActive;
+    private final Bitmap waypointInActive;
     private final Bitmap playerImage;
     private int vertDisp;
     private int horzDisp;
     private int playerSpriteOffset;
     private int tileHeight;
-    private Position playerPosition = new Position(0, 0);
+    private Position playerPosition;
     private Status playerStatus = Status.Wait;
-    MapNode next;
+    private MapNode next;
     private int routeIndex = 0;
     private int pendingDistance;
     private Direction playerDirection = Direction.Down;
+    private boolean isActivePlayer = false;
 
     private enum Direction {
         Up,
@@ -40,17 +43,31 @@ public class PlayerSprite extends PlayerNav implements ISprite {
     public PlayerSprite(MapNode insertionPoint, int tileHeight, Resources resources) {
         super(insertionPoint, tileHeight);
         this.tileHeight = tileHeight;
-        ID = UUID.randomUUID();
         playerPosition = new Position(insertionPoint.getPosition(), tileHeight);
         Bitmap bmp = BitmapFactory.decodeResource(resources, R.drawable.selection_reticule_green);
         bmp = LevelConstructsSprite.getResizedBitmap(bmp, (4 * tileHeight) / 5, (4 * tileHeight) / 5);    // 80% size of tile
-        waypoint = bmp;
+        waypointActive = bmp;
+        bmp = BitmapFactory.decodeResource(resources, R.drawable.selection_reticule_grey);
+        bmp = LevelConstructsSprite.getResizedBitmap(bmp, (4 * tileHeight) / 5, (4 * tileHeight) / 5);    // 80% size of tile
+        waypointInActive = bmp;
         bmp = BitmapFactory.decodeResource(resources, R.drawable.ic_player_image);
         playerImage = LevelConstructsSprite.getResizedBitmap(bmp, (4 * tileHeight) / 5, (4 * tileHeight) / 5);    // 80% size of tile
         playerSpriteOffset = (tileHeight - playerImage.getWidth()) / 2;
     }
 
-    public void resetPlayer(){
+    public void setActive() {
+        isActivePlayer = true;
+    }
+
+    public void setInActive() {
+        isActivePlayer = false;
+    }
+
+    public void toggleActive() {
+        isActivePlayer = !isActivePlayer;
+    }
+
+    public void resetPlayer() {
         playerStatus = Status.Wait;
         routeIndex = 0;
         pendingDistance = 0;
@@ -60,7 +77,7 @@ public class PlayerSprite extends PlayerNav implements ISprite {
 
     @Override
     public UUID getID() {
-        return ID;
+        return super.getID();
     }
 
     @Override
@@ -74,7 +91,13 @@ public class PlayerSprite extends PlayerNav implements ISprite {
             drawWP(canvas, cs);
         }
         // Draw path
-        for (WayPath waypath : getPath()) {
+        int color;
+        if (isActivePlayer) {
+            color = Color.RED;
+        } else {
+            color = Color.GRAY;
+        }
+        for (WayPath waypath : getPath(color)) {
             canvas.drawPath(waypath.path, waypath.paint);
         }
     }
@@ -83,21 +106,22 @@ public class PlayerSprite extends PlayerNav implements ISprite {
     public void update() {
         if (playerStatus == Status.Wait) {
             return;
-        } else if (playerStatus == Status.Move) {
+        }
+        if (playerStatus == Status.Move) {
             if (pendingDistance > 0) {
                 int jumpSize = 4;
                 switch (playerDirection) {
                     case Right:
-                        playerPosition.x +=jumpSize;
+                        playerPosition.x += jumpSize;
                         break;
                     case Left:
-                        playerPosition.x -=jumpSize;
+                        playerPosition.x -= jumpSize;
                         break;
                     case Down:
-                        playerPosition.y +=jumpSize;
+                        playerPosition.y += jumpSize;
                         break;
                     case Up:
-                        playerPosition.y -=jumpSize;
+                        playerPosition.y -= jumpSize;
                         break;
                 }
                 pendingDistance -= jumpSize;
@@ -144,11 +168,15 @@ public class PlayerSprite extends PlayerNav implements ISprite {
 
     public void drawWP(Canvas canvas, Waypoint cs) {
 
-        int edgeDistance = (tileHeight - waypoint.getHeight()) / 2;
+        int edgeDistance = (tileHeight - waypointActive.getHeight()) / 2;
         horzDisp = cs.getPosition().x * tileHeight + edgeDistance;
         vertDisp = cs.getPosition().y * tileHeight + edgeDistance;
 
-        canvas.drawBitmap(waypoint, horzDisp, vertDisp, null);
+        if (!isActivePlayer) {
+            canvas.drawBitmap(waypointInActive, horzDisp, vertDisp, null);
+            return;
+        }
+        canvas.drawBitmap(waypointActive, horzDisp, vertDisp, null);
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
         paint.setStrokeWidth(1);

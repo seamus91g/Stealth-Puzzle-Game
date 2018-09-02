@@ -16,6 +16,7 @@ public class Waypoint {
     private Waypoint nextWP;
     private MapNode wpLocation;
     private int drawShift;
+    private UUID soldierID;     // ID of the soldier to whom the waypoint belongs
 
     public Waypoint getPrevWP() {
         return prevWP;
@@ -68,11 +69,11 @@ public class Waypoint {
 
     private void calculateIndexDrawShfit() {
         drawShift = 0;
-        if (wpLocation.getWaypointCount() > 1) {
-            for (int i = 0; i < wpLocation.getWaypointCount(); ++i) {
-                if (wpLocation.getWaypoint(i).equals(this)) {
+        if (wpLocation.getWaypointCount(soldierID) > 1) {
+            for (int i = 0; i < wpLocation.getWaypointCount(soldierID); ++i) {
+                if (wpLocation.getWaypoint(soldierID, i).equals(this)) {
                     return;
-                } else if (wpLocation.getWaypoint(i).wpOrderNumber > 9) {
+                } else if (wpLocation.getWaypoint(soldierID, i).wpOrderNumber > 9) {
                     drawShift += 20;
                 } else {
                     drawShift += 10;
@@ -84,7 +85,8 @@ public class Waypoint {
         return drawShift;
     }
 
-    public Waypoint(MapNode node, Waypoint prev) {
+    public Waypoint(MapNode node, Waypoint prev, UUID soldierID) {
+        this.soldierID = soldierID;
         ID = UUID.randomUUID();
         this.wpLocation = node;
         this.prevWP = prev;
@@ -92,7 +94,7 @@ public class Waypoint {
             prev.nextWP = this;
             wpOrderNumber = prev.wpOrderNumber +1;
         }
-        node.addWaypoint(this);
+        node.addWaypoint(soldierID, this);
         calculateIndexDrawShfit();
 //        wpOrderNumber = ++waypointCount;
     }

@@ -1,13 +1,15 @@
 package com.example.gilroy.sneako;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
 
 public class MapNode {
     private final Position position;
     private List<MapNode> neighbours;
-    private List<Waypoint> waypoints = new ArrayList<>();
+    private Map<UUID, List<Waypoint>> waypoints = new HashMap<>();
 
     MapNode(Position pos) {
         this(pos.x, pos.y);
@@ -41,30 +43,33 @@ public class MapNode {
         return neighbours.get(index);
     }
 
-    public int getWaypointCount() {
-        return waypoints.size();
+    public int getWaypointCount(UUID id) {
+        if(waypoints.containsKey(id)){
+            return waypoints.get(id).size();
+        }else{
+            return 0;
+        }
     }
 
-    public Waypoint getWaypoint(int index) {
-        return waypoints.get(index);
+    public Waypoint getWaypoint(UUID id, int index) {
+        return waypoints.get(id).get(index);
     }
 
-    public void addWaypoint(Waypoint wp) {
-        waypoints.add(wp);
+    public void addWaypoint(UUID id, Waypoint wp) {
+        if(!waypoints.containsKey(id)){
+            waypoints.put(id, new ArrayList<Waypoint>());
+        }
+        waypoints.get(id).add(wp);
     }
 
-    public void removeWaypoint(int index) {
-        waypoints.remove(index);
+    public void removeWaypoint(UUID id, int index) {
+        waypoints.get(id).remove(index);
     }
 
-    public void removeTopWaypoint() {
-        removeWaypoint(waypoints.size() - 1);
-    }
-
-    public void removeWaypoint(UUID id) {
-        for (int i=0; i<waypoints.size(); ++i) {
-            if(waypoints.get(i).getID() == id){
-                waypoints.remove(i);
+    public void removeWaypoint(UUID idSoldier, UUID idWaypoint) {
+        for (int i=0; i<waypoints.get(idSoldier).size(); ++i) {
+            if(waypoints.get(idSoldier).get(i).getID() == idWaypoint){
+                waypoints.get(idSoldier).remove(i);
                 return;
             }
         }

@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -18,6 +19,7 @@ public class PlayerNavTest {
     int[][][] wallmatrix;
     LevelConstructs level;
     PlayerSprite player;
+    PlayerSprite player2;
 
     @Before
     public void setUp() throws Exception {
@@ -51,6 +53,7 @@ public class PlayerNavTest {
         level = new LevelConstructs(wallmatrix, 50);
         Context appContext = InstrumentationRegistry.getTargetContext();
         player = new PlayerSprite(level.getInsertionPoint(), 50, appContext.getResources());
+        player2 = new PlayerSprite(level.getNode(1, 0), 50, appContext.getResources());
     }
 
     @After
@@ -61,7 +64,7 @@ public class PlayerNavTest {
     public void addWaypointTest() {
         player.addWaypoint(level.getNode(1, 1));
         assertEquals(1, player.getWaypoints().size());
-        assertEquals(true, player.getWaypoints().values().contains(level.getNode(1, 1).getWaypoint(0)));
+        assertEquals(true, player.getWaypoints().values().contains(level.getNode(1, 1).getWaypoint(player.getID(), 0)));
     }
 
     @Test
@@ -77,6 +80,25 @@ public class PlayerNavTest {
         player.removeWaypoint(level.getNode(5, 2));
         assertEquals(0, player.getWaypoints().size());
     }
+
+    @Test
+    public void addRemoveWaypointsTwoSoldiersTest() {
+        player.addWaypoint(level.getNode(1, 1));
+        player.addWaypoint(level.getNode(2, 2));
+        player2.addWaypoint(level.getNode(4, 3));
+        player2.addWaypoint(level.getNode(5, 3));
+        player2.addWaypoint(level.getNode(6, 3));
+        assertEquals(2, player.getWaypoints().size());
+        assertEquals(3, player2.getWaypoints().size());
+        player.removeWaypoint(level.getNode(1, 1));
+        player.removeWaypoint(level.getNode(2, 2));
+        assertEquals(0, player.getWaypoints().size());
+        player2.removeWaypoint(level.getNode(4, 3));
+        player2.removeWaypoint(level.getNode(5, 3));
+        player2.removeWaypoint(level.getNode(6, 3));
+        assertEquals(0, player2.getWaypoints().size());
+    }
+
 
     @Test
     public void repeatedAddRemoveTest() {
@@ -112,7 +134,6 @@ public class PlayerNavTest {
 
     @Test
     public void addRemoveStackWaypoints() {
-
         player.addWaypoint(level.getNode(1, 1));
         player.addWaypoint(level.getNode(2, 2));
         player.addWaypoint(level.getNode(1, 1));
@@ -123,6 +144,30 @@ public class PlayerNavTest {
         assertEquals(1, player.getWaypoints().size());
         player.removeWaypoint(level.getNode(2, 2));
         assertEquals(0, player.getWaypoints().size());
+    }
+
+    @Test
+    public void addRemoveStackWaypointsTwoSoldiers() {
+        player.addWaypoint(level.getNode(1, 1));
+        player.addWaypoint(level.getNode(2, 2));
+        player.addWaypoint(level.getNode(1, 1));
+        player2.addWaypoint(level.getNode(1, 1));
+        player2.addWaypoint(level.getNode(2, 2));
+        player2.addWaypoint(level.getNode(1, 1));
+        assertEquals(3, player.getWaypoints().size());
+        player.removeWaypoint(level.getNode(1, 1));
+        assertEquals(2, player.getWaypoints().size());
+        player.removeWaypoint(level.getNode(1, 1));
+        assertEquals(1, player.getWaypoints().size());
+        player.removeWaypoint(level.getNode(2, 2));
+        assertEquals(0, player.getWaypoints().size());
+        assertEquals(3, player2.getWaypoints().size());
+        player2.removeWaypoint(level.getNode(1, 1));
+        assertEquals(2, player2.getWaypoints().size());
+        player2.removeWaypoint(level.getNode(1, 1));
+        assertEquals(1, player2.getWaypoints().size());
+        player2.removeWaypoint(level.getNode(2, 2));
+        assertEquals(0, player2.getWaypoints().size());
     }
 
     @Test
@@ -206,13 +251,13 @@ public class PlayerNavTest {
         addLoopA();
         addLoopA();
         assertEquals(getTotalRoute(player.getTopWaypoint()).size(), player.route.size());
-        clearNode(4, 2);
+        clearNode(player.getID(),4, 2);
         assertEquals(getTotalRoute(player.getTopWaypoint()).size(), player.route.size());
-        clearNode(3, 0);
+        clearNode(player.getID(),3, 0);
         assertEquals(getTotalRoute(player.getTopWaypoint()).size(), player.route.size());
-        clearNode(1, 0);
+        clearNode(player.getID(),1, 0);
         assertEquals(getTotalRoute(player.getTopWaypoint()).size(), player.route.size());
-        clearNode(1, 2);
+        clearNode(player.getID(),1, 2);
         assertEquals(getTotalRoute(player.getTopWaypoint()).size(), player.route.size());
     }
     public List<MapNode> getTotalRoute(Waypoint wp){
@@ -255,15 +300,15 @@ public class PlayerNavTest {
         addLoopB();
         addLoopB();
         addLoopB();
-        clearNode(0, 8);
-        clearNode(7, 4);
-        clearNode(6, 9);
-        clearNode(2, 2);
+        clearNode(player.getID(), 0, 8);
+        clearNode(player.getID(),7, 4);
+        clearNode(player.getID(),6, 9);
+        clearNode(player.getID(),2, 2);
         assertEquals(0, player.getWaypoints().size());
     }
 
-    public void clearNode(int x, int y){
-        while (level.getNode(x, y).getWaypointCount() > 0){
+    public void clearNode(UUID id, int x, int y){
+        while (level.getNode(x, y).getWaypointCount(id) > 0){
             player.removeWaypoint(level.getNode(x, y));
         }
     }

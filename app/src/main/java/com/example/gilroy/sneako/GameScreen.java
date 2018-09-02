@@ -82,7 +82,7 @@ public class GameScreen extends Activity {
         @Override
         public void onClick(View v) {
             String tag = (String) v.getTag();
-            gameView.changeActivePlayer(playerTags.get(tag));
+            gameView.declareActivePlayer(playerTags.get(tag));
         }
     };
     private View.OnClickListener resetListener = new View.OnClickListener() {

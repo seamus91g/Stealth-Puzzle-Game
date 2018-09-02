@@ -50,8 +50,19 @@ class GameView extends SurfaceView implements
             ally = new PlayerSprite(level.getNode(new Position(i, 0)), map.getTileHeight(), getResources());
             sprites.put(ally.getID(), ally);
             allies.add(ally);
-            currentlyActive = ally;
         }
+        declareActivePlayer(allies.get(0));
+    }
+
+    public void declareActivePlayer(int index) {
+        declareActivePlayer(allies.get(index));
+    }
+    private void declareActivePlayer(PlayerSprite active){
+        if(currentlyActive != null){
+            currentlyActive.setInActive();
+        }
+        currentlyActive = active;
+        currentlyActive.setActive();
     }
 
     public void update() {
@@ -93,8 +104,12 @@ class GameView extends SurfaceView implements
             canvas.translate(map.offsetPosition().x, map.offsetPosition().y);
 //            Log.d(TAG, "[ Drawing " + sprites.size() + "sprites! ]");
             for (ISprite cs : sprites.values()) {
+                if(cs.equals(currentlyActive)){
+                    continue;
+                }
                 cs.draw(canvas);
             }
+            currentlyActive.draw(canvas);
         }
     }
 
@@ -141,10 +156,10 @@ class GameView extends SurfaceView implements
         MapNode clickedNode = level.getNode(map.clickRegion(e));
         // ActiveCharacter.removeWaypoint();
         // TODO: Must be able remove stacked waypoint even on top node
-        if (clickedNode.getWaypointCount() == 0) {
+        if (clickedNode.getWaypointCount(currentlyActive.getID()) == 0) {
             return;
         }
-        if (clickedNode.getWaypoint(0).equals(currentlyActive.getTopWaypoint())) {
+        if (clickedNode.getWaypoint(currentlyActive.getID(), 0).equals(currentlyActive.getTopWaypoint())) {
             return;
         }
         resetAction();
@@ -228,7 +243,4 @@ class GameView extends SurfaceView implements
         }
     }
 
-    public void changeActivePlayer(int tag) {
-        currentlyActive = allies.get(tag);
-    }
 }

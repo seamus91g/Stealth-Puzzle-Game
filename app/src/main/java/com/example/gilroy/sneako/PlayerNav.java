@@ -8,13 +8,13 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class PlayerNav extends Navigation {
+    private final UUID ID;
 
     private static final String TAG = "PlayerNav";
     private Waypoint topWaypoint = null;
@@ -24,6 +24,7 @@ public class PlayerNav extends Navigation {
     PlayerNav(MapNode insertionPoint, int tileHeight) {
         super(insertionPoint);
         this.tileHeight = tileHeight;
+        ID = UUID.randomUUID();
     }
 
     public List<MapNode> getRoute() {
@@ -39,7 +40,7 @@ public class PlayerNav extends Navigation {
     }
 
     public void clearWaypoint(Waypoint wp) {
-        wp.getWaypointNode().removeWaypoint(wp.getID());
+        wp.getWaypointNode().removeWaypoint(ID, wp.getID());
         waypoints.remove(wp.getID());
         if (wp.equals(topWaypoint)) {
             topWaypoint = topWaypoint.getPrevWP();
@@ -51,17 +52,17 @@ public class PlayerNav extends Navigation {
         // if no waypoints, return
         // if top waypoint, no stack, return
         // if top waypoint, stack, remove next highest from stack
-        if (clickedNode.getWaypointCount() == 0) {
+        if (clickedNode.getWaypointCount(ID) == 0) {
             return;
         }
         Waypoint deleteWP;
         // If > 1 waypoints, and indexHighest equal topwaypoint, choose second top
         // Else, choose top
-        if ((clickedNode.getWaypointCount() > 1)
-                && (clickedNode.getWaypoint(clickedNode.getWaypointCount() - 1).equals(topWaypoint))) {
-            deleteWP = clickedNode.getWaypoint(clickedNode.getWaypointCount() - 2);
+        if ((clickedNode.getWaypointCount(ID) > 1)
+                && (clickedNode.getWaypoint(ID, clickedNode.getWaypointCount(ID) - 1).equals(topWaypoint))) {
+            deleteWP = clickedNode.getWaypoint(ID, clickedNode.getWaypointCount(ID) - 2);
         } else {
-            deleteWP = clickedNode.getWaypoint(clickedNode.getWaypointCount() - 1);
+            deleteWP = clickedNode.getWaypoint(ID, clickedNode.getWaypointCount(ID) - 1);
         }
 
         if (deleteWP.equals(topWaypoint)) {    // TODO: Doesnt consider stacked
@@ -143,7 +144,8 @@ public class PlayerNav extends Navigation {
 
         Waypoint waypoint = new Waypoint(
                 clickedNode,
-                topWaypoint);
+                topWaypoint,
+                ID);
 //        if (topWaypoint != null) {
 //            topWaypoint.setNextWP(waypoint);
 //        }
@@ -155,14 +157,14 @@ public class PlayerNav extends Navigation {
         Log.d(GameView.TAG, "[~~~~~~~~~~~~~~~~~~~~~~~~~~~]");
     }
 
-    protected List<WayPath> getPath() {
+    protected List<WayPath> getPath(int color) {
         List<WayPath> waypath = new ArrayList<>();
         int offset = tileHeight / 2;
         for (int k = 0; k < route.size() - 1; ++k) {
             Paint paint = new Paint();
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(2);
-            paint.setColor(Color.RED);
+            paint.setColor(color);
             Path path = new Path();
             path.moveTo(route.get(k).xPosition() * tileHeight + offset, route.get(k).yPosition() * tileHeight + offset);
             path.lineTo(route.get(k + 1).xPosition() * tileHeight + offset, route.get(k + 1).yPosition() * tileHeight + offset);
@@ -213,5 +215,8 @@ public class PlayerNav extends Navigation {
         }
     }
 
+    protected UUID getID() {
+        return ID;
+    }
 }
 

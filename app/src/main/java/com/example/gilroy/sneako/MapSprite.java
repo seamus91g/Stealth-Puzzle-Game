@@ -32,7 +32,7 @@ public class MapSprite implements ISprite {
 
     private void createMap(Resources resources) {
         // Get a scaled bitmap and a drawable to display to canvas
-        Bitmap tile = getScaledBitmap(R.drawable.ice_2, resources);
+        Bitmap tile = getScaledBitmap(R.drawable.ice_2_square_outline, resources);
         BitmapDrawable bmpd = new BitmapDrawable(resources, tile);
         tileHeight = tile.getHeight();
         image = bmpd;
