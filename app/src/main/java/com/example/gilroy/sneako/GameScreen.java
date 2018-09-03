@@ -54,7 +54,7 @@ public class GameScreen extends Activity {
                 Button playerX = new Button(this);
                 String tag = "Player_" + i;
                 playerX.setTag(tag);
-                playerX.setText("" + (i+1));
+                playerX.setText(String.valueOf(i+1));
                 playerX.setOnClickListener(changePlayerListener);
                 buttons.addView(playerX);
                 playerTags.put(tag, i);

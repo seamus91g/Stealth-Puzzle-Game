@@ -1,12 +1,10 @@
 package com.example.gilroy.sneako;
 
-import android.util.Log;
-
 public class Map {
     private final int widthCount;
     private final int heightCount;
     private Position canvasPosition;
-    private int tileHeight = 0;
+    private int tileHeight;
 
     Map(int[][][] wallmatrix, int tileHeight, float screenWidth, float screenHeight) {
         widthCount = wallmatrix[0][0].length;

@@ -1,10 +1,6 @@
 package com.example.gilroy.sneako;
 
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,11 +15,10 @@ public class PlayerNav extends Navigation {
     private static final String TAG = "PlayerNav";
     private Waypoint topWaypoint = null;
     private Map<UUID, Waypoint> waypoints = new HashMap<>();
-    private int tileHeight;
+    private boolean isPathDrawUpdated = false;
 
-    PlayerNav(MapNode insertionPoint, int tileHeight) {
+    PlayerNav(MapNode insertionPoint) {
         super(insertionPoint);
-        this.tileHeight = tileHeight;
         ID = UUID.randomUUID();
     }
 
@@ -39,7 +34,7 @@ public class PlayerNav extends Navigation {
         return topWaypoint;
     }
 
-    public void clearWaypoint(Waypoint wp) {
+    private void clearWaypoint(Waypoint wp) {
         wp.getWaypointNode().removeWaypoint(ID, wp.getID());
         waypoints.remove(wp.getID());
         if (wp.equals(topWaypoint)) {
@@ -55,6 +50,7 @@ public class PlayerNav extends Navigation {
         if (clickedNode.getWaypointCount(ID) == 0) {
             return;
         }
+        isPathDrawUpdated = false;
         Waypoint deleteWP;
         // If > 1 waypoints, and indexHighest equal topwaypoint, choose second top
         // Else, choose top
@@ -65,7 +61,7 @@ public class PlayerNav extends Navigation {
             deleteWP = clickedNode.getWaypoint(ID, clickedNode.getWaypointCount(ID) - 1);
         }
 
-        if (deleteWP.equals(topWaypoint)) {    // TODO: Doesnt consider stacked
+        if (deleteWP.equals(topWaypoint)) {
             // Remove all route nodes between clicked and previous
             deleteLast();
             clearWaypoint(deleteWP);
@@ -108,7 +104,7 @@ public class PlayerNav extends Navigation {
         route = reCalcRoute();
     }
 
-    public LinkedList<MapNode> reCalcRoute() {
+    private LinkedList<MapNode> reCalcRoute() {
         List<MapNode> testRoute = new ArrayList<>();
         Waypoint wp = topWaypoint;
         testRoute.add(wp.getWaypointNode());
@@ -125,53 +121,20 @@ public class PlayerNav extends Navigation {
     }
 
     public void addWaypoint(MapNode clickedNode) {
-
-        if (topWaypoint == null) {
-//            //      add node
-        }
-
         List<MapNode> pathToTake = travel(route.getLast(), clickedNode);
         if (pathToTake == null) {
             Log.d(GameView.TAG, "No path found!");
             return;
         }
+        isPathDrawUpdated = false;
         route.addAll(pathToTake);
-        // if node = on top
-        //      Add pause
-        // wayPointStack.add(node)
-        // if node in stack already
-        //      Display integer count in
 
         Waypoint waypoint = new Waypoint(
                 clickedNode,
                 topWaypoint,
                 ID);
-//        if (topWaypoint != null) {
-//            topWaypoint.setNextWP(waypoint);
-//        }
-//        clickedNode.removeWaypoint(waypoint);
         topWaypoint = waypoint;
         waypoints.put(waypoint.getID(), waypoint);
-
-//        printDeets("End tap");
-        Log.d(GameView.TAG, "[~~~~~~~~~~~~~~~~~~~~~~~~~~~]");
-    }
-
-    protected List<WayPath> getPath(int color) {
-        List<WayPath> waypath = new ArrayList<>();
-        int offset = tileHeight / 2;
-        for (int k = 0; k < route.size() - 1; ++k) {
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(2);
-            paint.setColor(color);
-            Path path = new Path();
-            path.moveTo(route.get(k).xPosition() * tileHeight + offset, route.get(k).yPosition() * tileHeight + offset);
-            path.lineTo(route.get(k + 1).xPosition() * tileHeight + offset, route.get(k + 1).yPosition() * tileHeight + offset);
-//            canvas.drawPath(path, paint);
-            waypath.add(new WayPath(path, paint));
-        }
-        return waypath;
     }
 
     public void printDeets(String note) {
@@ -213,6 +176,12 @@ public class PlayerNav extends Navigation {
         } else {
             Log.d(TAG, "No waypoints!");
         }
+    }
+    protected void setPathDrawUpdated(){
+        isPathDrawUpdated = true;
+    }
+    protected boolean isPathDrawUpdated(){
+        return isPathDrawUpdated;
     }
 
     protected UUID getID() {

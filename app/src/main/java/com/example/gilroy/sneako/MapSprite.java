@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import java.util.UUID;
@@ -21,7 +20,6 @@ public class MapSprite implements ISprite {
 
     MapSprite(int[][][] wallmatrix, Resources resources) {
         createMap(resources);
-        float wer = GameScreen.SCREEN_WIDTH;
         map = new Map(wallmatrix, tileHeight, GameScreen.SCREEN_WIDTH , GameScreen.SCREEN_HEIGHT);
         image.setTileModeX(Shader.TileMode.REPEAT);
         image.setTileModeY(Shader.TileMode.REPEAT);

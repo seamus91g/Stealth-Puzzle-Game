@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import java.util.UUID;
 
 public class Waypoint {
-//    private static int waypointCount = 0;
     private final UUID ID;
     private int pauseCount = 0;
     private int wpOrderNumber = 1;  // Default. Over-written if previous node
@@ -17,6 +16,7 @@ public class Waypoint {
     private MapNode wpLocation;
     private int drawShift;
     private UUID soldierID;     // ID of the soldier to whom the waypoint belongs
+    private String indexText;
 
     public Waypoint getPrevWP() {
         return prevWP;
@@ -28,7 +28,6 @@ public class Waypoint {
 
     void delete() {
         if (nextWP == null && prevWP == null) {
-//            waypointCount = 0;
             return;
         }
         if (nextWP == null) {
@@ -59,12 +58,10 @@ public class Waypoint {
         int count = 1;
         while (wp != null) {
             wp.wpOrderNumber = count;
-//            wp.setStackHeight();
             wp.calculateIndexDrawShfit();
             wp = wp.nextWP;
             ++count;
         }
-//        waypointCount = count - 1;
     }
 
     private void calculateIndexDrawShfit() {
@@ -80,6 +77,7 @@ public class Waypoint {
                 }
             }
         }
+        updateWaypointText();
     }
     public int findLabelDrawShift(){
         return drawShift;
@@ -96,7 +94,17 @@ public class Waypoint {
         }
         node.addWaypoint(soldierID, this);
         calculateIndexDrawShfit();
-//        wpOrderNumber = ++waypointCount;
+    }
+    public void updateWaypointText(){
+        if (drawShift > 0) {
+            indexText = "," + String.valueOf(wpOrderNumber);
+        } else {
+            indexText = String.valueOf(wpOrderNumber);
+        }
+    }
+
+    public String getWaypointText(){
+        return indexText;
     }
 
     public MapNode getWaypointNode() {
@@ -106,16 +114,8 @@ public class Waypoint {
         return wpLocation.getPosition();
     }
 
-//    @Override
     public UUID getID() {
         return ID;
     }
 
-//    @Override
-
-
-//    @Override
-//    public void update() {
-//
-//    }
 }

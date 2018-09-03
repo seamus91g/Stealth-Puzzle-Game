@@ -1,21 +1,8 @@
 package com.example.gilroy.sneako;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.drawable.BitmapDrawable;
-import android.provider.ContactsContract;
-import android.util.EventLog;
-import android.util.Log;
-import android.view.MotionEvent;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 

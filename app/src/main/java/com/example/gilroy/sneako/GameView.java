@@ -1,7 +1,6 @@
 package com.example.gilroy.sneako;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.util.Log;
@@ -154,8 +153,6 @@ class GameView extends SurfaceView implements
             return;
         }
         MapNode clickedNode = level.getNode(map.clickRegion(e));
-        // ActiveCharacter.removeWaypoint();
-        // TODO: Must be able remove stacked waypoint even on top node
         if (clickedNode.getWaypointCount(currentlyActive.getID()) == 0) {
             return;
         }
@@ -173,9 +170,6 @@ class GameView extends SurfaceView implements
             return false;
         }
         MapNode clickedNode = level.getNode(map.clickRegion(event));
-        // Array of all nodes. Check if already clicked, or if on top
-        // Store first waypoint node, can then step through waypoints
-        // node = allnodes[clickregion]
         resetAction();
         if (currentlyActive.getTopWaypoint() != null
                 && clickedNode.equals(currentlyActive.getTopWaypoint().getWaypointNode())) {
@@ -185,8 +179,6 @@ class GameView extends SurfaceView implements
             Log.d(TAG, "Adding!");
             currentlyActive.addWaypoint(clickedNode);
         }
-//        printDeets("Start tap");
-//        MapNode clickedNode = mapNodes[clickRegion.x][clickRegion.y];
         return false;
     }
 
@@ -217,7 +209,6 @@ class GameView extends SurfaceView implements
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
-//        logActions(event);
         if (action == MotionEvent.ACTION_POINTER_DOWN) {
             mapScroll = true;
         } else if (action == MotionEvent.ACTION_UP) {
