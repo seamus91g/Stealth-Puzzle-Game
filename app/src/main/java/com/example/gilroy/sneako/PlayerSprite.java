@@ -19,8 +19,6 @@ public class PlayerSprite extends PlayerNav implements ISprite {
     private final Bitmap waypointActive;
     private final Bitmap waypointInActive;
     private final Bitmap playerImage;
-    //    private int vertDisp;
-//    private int horzDisp;
     private int playerSpriteOffset;
     private int tileHeight;
     private Position playerPosition;
@@ -122,14 +120,15 @@ public class PlayerSprite extends PlayerNav implements ISprite {
 
     private void updatePosition() {
         if (pendingDistance > 0) {
-            int stepSize = 4;
+            int stepSize = 6;
             takeStep(stepSize);
             pendingDistance -= stepSize;
         } else {
             beginNextTile();
         }
     }
-    private void takeStep(int stepSize){
+
+    private void takeStep(int stepSize) {
         switch (playerDirection) {
             case Right:
                 playerPosition.x += stepSize;
@@ -147,10 +146,7 @@ public class PlayerSprite extends PlayerNav implements ISprite {
     }
 
     private void beginNextTile() {
-
-//        playerPosition.x = next.getPosition().x * tileHeight;   // Snap to position
-//        playerPosition.y = next.getPosition().y * tileHeight;
-            playerPosition = new Position(next.getPosition(), tileHeight);
+        playerPosition = new Position(next.getPosition(), tileHeight);  // Snap to position
         ++routeIndex;
         if (routeIndex == route.size()) {
             playerStatus = Status.Wait;
@@ -159,7 +155,7 @@ public class PlayerSprite extends PlayerNav implements ISprite {
         next = route.get(routeIndex);
         playerDirection = getDirection(next);
         takeStep(-pendingDistance);             // Account for previous Snap to position
-        pendingDistance = tileHeight;
+        pendingDistance = tileHeight + pendingDistance;
     }
 
     private Direction getDirection(MapNode mn) {
