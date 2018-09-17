@@ -41,15 +41,15 @@ public class Waypoint {
         updateWPOrder();
     }
 
-    public int findStackHeight(){
+    public int findStackHeight() {
         return wpOrderNumber;
     }
 
     private void updateWPOrder() {
         Waypoint wp;
-        if(this.prevWP != null) {
+        if (this.prevWP != null) {
             wp = this.prevWP;
-        }else{
+        } else {
             wp = this.nextWP;
         }
         while (wp.prevWP != null) {
@@ -79,7 +79,8 @@ public class Waypoint {
         }
         updateWaypointText();
     }
-    public int findLabelDrawShift(){
+
+    public int findLabelDrawShift() {
         return drawShift;
     }
 
@@ -89,13 +90,28 @@ public class Waypoint {
         this.wpLocation = node;
         this.prevWP = prev;
         if (prev != null) {
+            wpOrderNumber = prev.wpOrderNumber + 1;
+            if (prev.nextWP != null) {        // Inserting waypoint in middle of route
+                prev.nextWP.prevWP = this;
+                incrementSubsequentWpNumbers(prev.nextWP, wpOrderNumber + 1);
+            }
+            this.nextWP = prev.nextWP;
             prev.nextWP = this;
-            wpOrderNumber = prev.wpOrderNumber +1;
         }
-        node.addWaypoint(soldierID, this);
+        node.addWaypoint(soldierID, this);      // TODO: does node really need to be a parameter .. ??
         calculateIndexDrawShfit();
     }
-    public void updateWaypointText(){
+
+    public void incrementSubsequentWpNumbers(Waypoint next, int startingWPNumber) {
+        do {
+            next.wpOrderNumber = startingWPNumber;
+            next.updateWaypointText();
+            next = next.nextWP;
+            ++startingWPNumber;
+        } while (next != null);
+    }
+
+    public void updateWaypointText() {
         if (drawShift > 0) {
             indexText = "," + String.valueOf(wpOrderNumber);
         } else {
@@ -103,14 +119,19 @@ public class Waypoint {
         }
     }
 
-    public String getWaypointText(){
+    public String getWaypointText() {
         return indexText;
+    }
+
+    public int getWaypointIndex() {
+        return Integer.valueOf(indexText);
     }
 
     public MapNode getWaypointNode() {
         return wpLocation;
     }
-    public Position getPosition(){
+
+    public Position getPosition() {
         return wpLocation.getPosition();
     }
 

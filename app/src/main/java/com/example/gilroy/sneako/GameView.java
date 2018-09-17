@@ -56,12 +56,14 @@ class GameView extends SurfaceView implements
     public void declareActivePlayer(int index) {
         declareActivePlayer(allies.get(index));
     }
-    private void declareActivePlayer(PlayerSprite active){
-        if(currentlyActive != null){
+
+    private void declareActivePlayer(PlayerSprite active) {
+        if (currentlyActive != null) {
             currentlyActive.setInActive();
         }
         currentlyActive = active;
         currentlyActive.setActive();
+        level.disableDialogDecidingIndexNumber();
     }
 
     public void update() {
@@ -103,7 +105,7 @@ class GameView extends SurfaceView implements
             canvas.translate(map.offsetPosition().x, map.offsetPosition().y);
 //            Log.d(TAG, "[ Drawing " + sprites.size() + "sprites! ]");
             for (ISprite cs : sprites.values()) {
-                if(cs.equals(currentlyActive)){
+                if (cs.equals(currentlyActive)) {
                     continue;
                 }
                 cs.draw(canvas);
@@ -130,6 +132,10 @@ class GameView extends SurfaceView implements
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         if (mapScroll) {
             map.shiftCanvas(distanceX, distanceY);
+            return false;
+        }
+        if (level.isDialogDisplayed()) {
+            level.shiftIndex(distanceY);
         }
         return false;
     }
@@ -145,7 +151,15 @@ class GameView extends SurfaceView implements
         Log.d(TAG, "Action was onShowPress");
 
     }
+    public void clearWaypoints(){
+        currentlyActive.clearWaypoints();
+    }
 
+    //  If waypointsCount == 0
+    //      boolIsEnteringWaypointNumber = true
+    //      display variable index counter, arrows
+    //      Listen for onScroll
+    //      If tap anywhere, set false
     @Override
     public void onLongPress(MotionEvent e) {
         Log.d(TAG, "Action was onLongPress");
@@ -154,6 +168,10 @@ class GameView extends SurfaceView implements
         }
         MapNode clickedNode = level.getNode(map.clickRegion(e));
         if (clickedNode.getWaypointCount(currentlyActive.getID()) == 0) {
+            level.enableDialogDecidingIndexNumber(new Position(map.clickRegion(e), map.getTileHeight()),
+                    clickedNode,
+                    currentlyActive.getTopWaypoint(),
+                    currentlyActive.getWaypoints().size());
             return;
         }
         if (clickedNode.getWaypoint(currentlyActive.getID(), 0).equals(currentlyActive.getTopWaypoint())) {
@@ -165,6 +183,16 @@ class GameView extends SurfaceView implements
 
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
+        if (level.isDialogDisplayed()) {
+            // TODO: This should get disabled for click anywhere, including xml buttons
+            if(!level.wasCancelClicked(map.clickLocation(event.getX(), event.getY()))){
+                Log.d(TAG, "Not cancelled!!");
+                currentlyActive.addWaypoint(level.getDialogClickedNode(), level.getDialogIndexNumber());
+            }
+            level.disableDialogDecidingIndexNumber();
+            resetAction();
+            return false;
+        }
         if (map.clickRegion(event).x == -1) {
             Log.d(TAG, "Out of bounds!~");
             return false;

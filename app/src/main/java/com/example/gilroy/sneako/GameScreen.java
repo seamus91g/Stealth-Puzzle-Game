@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import java.util.HashMap;
 
 import java.util.Map;
+
 public class GameScreen extends Activity {
 
     private static final String TAG = "LogTag";
@@ -42,19 +43,27 @@ public class GameScreen extends Activity {
 
         Button startButton = new Button(this);
         Button resetButton = new Button(this);
-
+        Button clearButton = new Button(this);
+        int buttonWidth = (int) (SCREEN_WIDTH / 5 - 5);
+        startButton.setLayoutParams(new LinearLayout.LayoutParams(buttonWidth, 90));
+        resetButton.setLayoutParams(new LinearLayout.LayoutParams(buttonWidth, 90));
+        clearButton.setLayoutParams(new LinearLayout.LayoutParams(buttonWidth, 90));
 //        int width = 100;
         startButton.setText("Start");
         resetButton.setText("Reset");
+        clearButton.setText("Clear");
 
         buttons.addView(startButton);
         buttons.addView(resetButton);
-        if(gameSetup.numAllies > 1){
-            for(int i=0; i<gameSetup.numAllies; ++i){
+        buttons.addView(clearButton);
+
+        if (gameSetup.numAllies > 1) {
+            for (int i = 0; i < gameSetup.numAllies; ++i) {
                 Button playerX = new Button(this);
+                playerX.setLayoutParams(new LinearLayout.LayoutParams(buttonWidth, 90));
                 String tag = "Player_" + i;
                 playerX.setTag(tag);
-                playerX.setText(String.valueOf(i+1));
+                playerX.setText(String.valueOf(i + 1));
                 playerX.setOnClickListener(changePlayerListener);
                 buttons.addView(playerX);
                 playerTags.put(tag, i);
@@ -70,6 +79,7 @@ public class GameScreen extends Activity {
 
         startButton.setOnClickListener(startListener);
         resetButton.setOnClickListener(resetListener);
+        clearButton.setOnClickListener(clearListener);
     }
 
     private View.OnClickListener startListener = new View.OnClickListener() {
@@ -89,6 +99,12 @@ public class GameScreen extends Activity {
         @Override
         public void onClick(View v) {
             gameView.resetAction();
+        }
+    };
+    private View.OnClickListener clearListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            gameView.clearWaypoints();
         }
     };
 

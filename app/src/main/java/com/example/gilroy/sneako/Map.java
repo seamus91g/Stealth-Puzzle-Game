@@ -15,6 +15,12 @@ public class Map {
         canvasPosition = new Position(xShift, yShift);
     }
 
+    public Position clickLocation(float x, float y) {
+        int fRegionX = (int) (x - canvasPosition.x);
+        int fRegionY = (int) (y - canvasPosition.y);
+        return new Position(fRegionX, fRegionY);
+    }
+
     public Position clickRegion(float x, float y) {
         float fRegionX = ((x - canvasPosition.x) / tileHeight);
         int regionX = (int) ((fRegionX > 0 ) ? fRegionX : fRegionX - 1);

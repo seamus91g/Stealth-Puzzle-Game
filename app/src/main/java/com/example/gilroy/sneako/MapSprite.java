@@ -72,6 +72,10 @@ public class MapSprite implements ISprite {
         return map.clickRegion(x, y);
     }
 
+    public Position clickLocation(float x, float y) {
+        return map.clickLocation(x, y);
+    }
+
     public Position clickRegion(MotionEvent event) {
         return clickRegion(event.getX(), event.getY());
     }

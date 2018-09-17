@@ -1,6 +1,7 @@
 package com.example.gilroy.sneako;
 
 import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,8 +31,27 @@ public class PlayerNav extends Navigation {
         return Collections.unmodifiableMap(waypoints);
     }
 
+    protected void eraseRoute(){
+        deleteAllNodeWaypoints();
+        topWaypoint = null;
+        waypoints.clear();
+        waypoints = new HashMap<>();    // TODO: .. necessary??
+        MapNode insertionPoint = route.get(0);
+        route.clear();
+        route = new LinkedList<>();
+        route.add(insertionPoint);
+        isPathDrawUpdated = false;
+    }
+
     public Waypoint getTopWaypoint() {
         return topWaypoint;
+    }
+    private void deleteAllNodeWaypoints(){
+        Waypoint wp = topWaypoint;
+        while(wp!=null){
+            wp.getWaypointNode().removeWaypoint(ID, wp.getID());
+            wp = wp.getPrevWP();
+        }
     }
 
     private void clearWaypoint(Waypoint wp) {
@@ -120,6 +140,28 @@ public class PlayerNav extends Navigation {
         return ll;
     }
 
+    // Add waypoint at X location
+    public void addWaypoint(MapNode clickedNode, int index) {
+        if (index < 1 || index > waypoints.size() + 1) {
+            return;
+        }
+        if(index == waypoints.size()+1){
+            addWaypoint(clickedNode);
+            return;
+        }
+        isPathDrawUpdated = false;
+        int waypointCount = waypoints.size();
+        int BSteps = waypointCount - index + 1;
+        Waypoint wp = topWaypoint;
+        while(BSteps > 0){
+            wp = wp.getPrevWP();
+            --BSteps;
+        }
+        Waypoint waypoint = new Waypoint(clickedNode, wp, ID);
+        waypoints.put(waypoint.getID(), waypoint);
+        route = reCalcRoute();
+    }
+
     public void addWaypoint(MapNode clickedNode) {
         List<MapNode> pathToTake = travel(route.getLast(), clickedNode);
         if (pathToTake == null) {
@@ -177,10 +219,12 @@ public class PlayerNav extends Navigation {
             Log.d(TAG, "No waypoints!");
         }
     }
-    protected void setPathDrawUpdated(){
+
+    protected void setPathDrawUpdated() {
         isPathDrawUpdated = true;
     }
-    protected boolean isPathDrawUpdated(){
+
+    protected boolean isPathDrawUpdated() {
         return isPathDrawUpdated;
     }
 

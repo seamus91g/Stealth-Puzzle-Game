@@ -60,6 +60,10 @@ public class PlayerSprite extends PlayerNav implements ISprite {
         updateWaypointTextStyle();
     }
 
+    public void clearWaypoints(){
+        super.eraseRoute();
+        resetPlayer();
+    }
     public void setActive() {
         isActivePlayer = true;
         updatePath();
