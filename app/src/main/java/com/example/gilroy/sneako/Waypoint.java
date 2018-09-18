@@ -69,7 +69,7 @@ public class Waypoint {
         if (wpLocation.getWaypointCount(soldierID) > 1) {
             for (int i = 0; i < wpLocation.getWaypointCount(soldierID); ++i) {
                 if (wpLocation.getWaypoint(soldierID, i).equals(this)) {
-                    return;
+                    break;
                 } else if (wpLocation.getWaypoint(soldierID, i).wpOrderNumber > 9) {
                     drawShift += 20;
                 } else {
@@ -124,7 +124,7 @@ public class Waypoint {
     }
 
     public int getWaypointIndex() {
-        return Integer.valueOf(indexText);
+        return wpOrderNumber;
     }
 
     public MapNode getWaypointNode() {

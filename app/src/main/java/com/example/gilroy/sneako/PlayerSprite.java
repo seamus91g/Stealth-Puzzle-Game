@@ -215,6 +215,7 @@ public class PlayerSprite extends PlayerNav implements ISprite {
     }
 
     private void updatePath(int color) {
+        // TODO: Create unit test to determine if waypath matches up with route
         waypath = new ArrayList<>();
         int offset = tileHeight / 2;
         Paint paint;

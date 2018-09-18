@@ -14,6 +14,8 @@ import java.util.UUID;
 
 public class LevelConstructsSprite implements ISprite {
 
+    public static final int ADD_WAYPOINT = -1;
+    public static final int NO_SELECTION_MADE = -2;
     private final UUID ID;
     private LevelConstructs level;
     private Position decidingIndexDialogPosition = null;
@@ -27,8 +29,11 @@ public class LevelConstructsSprite implements ISprite {
     private int waypointCount;
     private int jumpDistance = 20;
     private Rect cancelDialogRect;
+    private int[] waypointsNumbers;
     private boolean isDialogUpdated = true;
-    WayPath[] indexDialogDrawItems = new WayPath[4];    // 1: arrow, circle, X
+    private Rect[] wpRects;
+    private WayPath[] indexDialogDrawItems = new WayPath[4];    // 1: arrow, circle, X
+    private boolean isWaypointChoiceDisplayed = false;
 
     public LevelConstructsSprite(int[][][] wallmatrix, int dimension) {
         level = new LevelConstructs(wallmatrix, dimension);
@@ -48,14 +53,17 @@ public class LevelConstructsSprite implements ISprite {
             canvas.drawPath(wall.path, wall.paint);
         }
         if (isDialogDisplayed && isDialogUpdated) {
-//            drawDialogDecidingIndexNumber(canvas);
-//            drawCancelDialogOption(canvas);
+            drawDialogDecidingIndexNumber(canvas);
+            drawCancelDialogOption(canvas);
+        }
+        if (isWaypointChoiceDisplayed && isDialogUpdated) {     // TODO: Is isDialogUpdated necessary??
+            drawRemoveWaypointDialog(canvas);
         }
     }
 
     @Override
     public void update() {
-        if(!isDialogUpdated){
+        if (!isDialogUpdated) {
             updateIndexSelectDialog();
             isDialogUpdated = true;
         }
@@ -65,12 +73,14 @@ public class LevelConstructsSprite implements ISprite {
         return level.getNode(position);
     }
 
-    public void updateIndexSelectDialog(){
+
+    public void updateIndexSelectDialog() {
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
         paint.setStrokeWidth(2);
         paint.setColor(Color.RED);
         Path path = new Path();
+        // TODO: Make the dimensions a factor of the tileHeight
         path.moveTo(decidingIndexDialogPosition.x + dialogDrawShift * 2, decidingIndexDialogPosition.y + dialogDrawShift * 7);
         path.lineTo(decidingIndexDialogPosition.x + dialogDrawShift * 2 + 12, decidingIndexDialogPosition.y + dialogDrawShift * 7 - 20);
         path.lineTo(decidingIndexDialogPosition.x + dialogDrawShift * 2 + 24, decidingIndexDialogPosition.y + dialogDrawShift * 7);
@@ -88,14 +98,15 @@ public class LevelConstructsSprite implements ISprite {
                 radius,
                 Path.Direction.CW);
         indexDialogDrawItems[1] = new WayPath(cancelButtonCircle, circlePaint);
+
         Paint xShapePaint = new Paint();
         Path xShapePath = new Path();
         xShapePaint.setColor(Color.RED);
         xShapePaint.setStyle(Paint.Style.STROKE);
         xShapePaint.setStrokeWidth(5);
-        xShapePath.moveTo(  decidingIndexDialogPosition.x - dialogDrawShift * 3 - xDimension,
+        xShapePath.moveTo(decidingIndexDialogPosition.x - dialogDrawShift * 3 - xDimension,
                 decidingIndexDialogPosition.y - dialogDrawShift * 3 - xDimension);
-        xShapePath.lineTo(  decidingIndexDialogPosition.x - dialogDrawShift * 3 + xDimension,
+        xShapePath.lineTo(decidingIndexDialogPosition.x - dialogDrawShift * 3 + xDimension,
                 decidingIndexDialogPosition.y - dialogDrawShift * 3 + xDimension);
         xShapePath.moveTo(decidingIndexDialogPosition.x - dialogDrawShift * 3 - xDimension,
                 decidingIndexDialogPosition.y - dialogDrawShift * 3 + xDimension);
@@ -139,6 +150,92 @@ public class LevelConstructsSprite implements ISprite {
         wpTextStyle.setTextSize(50);
     }
 
+    public void enableRemoveWaypointDialog(Position position, List<Waypoint> nodeWaypoints) {
+        // For each waypoint, create numbered click circle
+        // Get numbers of waypoints
+        isDialogUpdated = false;
+        isWaypointChoiceDisplayed = true;
+        decidingIndexDialogPosition = position;
+        dialogClickedNode = nodeWaypoints.get(0).getWaypointNode();
+        waypointsNumbers = new int[nodeWaypoints.size()];
+        for (int i = 0; i < nodeWaypoints.size(); ++i) {
+            waypointsNumbers[i] = nodeWaypoints.get(i).getWaypointIndex();
+        }
+
+    }
+    public boolean isWPSelectDisplayed(){
+        return isWaypointChoiceDisplayed;
+    }
+    public int queryClick(Position click){
+        for(int i=0; i<waypointsNumbers.length; ++i){
+            if(wpRects[i].contains(click.x, click.y)){
+                return i;
+            }
+        }
+        if(wpRects[waypointsNumbers.length].contains(click.x, click.y)){
+            return ADD_WAYPOINT;
+        }
+        return NO_SELECTION_MADE;
+    }
+    public void drawRemoveWaypointDialog(Canvas canvas) {
+
+        int tileSize = 93;
+        int radius = 35;
+        int buffer = 20;
+        int buttonSize = radius * 2 + buffer;
+
+        int xStart = decidingIndexDialogPosition.x + tileSize / 2 - (buttonSize * (waypointsNumbers.length + 1)) / 2;
+        int yPos = decidingIndexDialogPosition.y - (buffer + buttonSize / 2);
+
+        Paint circlePaint = new Paint();
+        Path circlePath = new Path();
+        circlePaint.setColor(Color.BLUE);
+
+        Paint circleTextPaint = new Paint();
+        circleTextPaint.setStyle(Paint.Style.STROKE);
+        circleTextPaint.setTextSize(40);
+        circleTextPaint.setStrokeWidth(6);
+        circleTextPaint.setColor(Color.BLACK);
+
+        Paint rectPaint = new Paint();
+        rectPaint.setColor(Color.GREEN);
+        rectPaint.setStrokeWidth(1);
+        rectPaint.setStyle(Paint.Style.STROKE);
+        wpRects = new Rect[waypointsNumbers.length +1];
+
+        for (int i = 0; i < waypointsNumbers.length + 1; ++i) {
+            circlePath.addCircle(xStart + buttonSize / 2 + i * buttonSize,
+                    yPos,
+                    radius,
+                    Path.Direction.CW);
+            Rect WPRect = new Rect(xStart + i * buttonSize,
+                    yPos - buttonSize / 2,
+                    xStart + (i + 1) * buttonSize,
+                    yPos + buttonSize / 2);
+            canvas.drawRect(WPRect, rectPaint);
+            wpRects[i] = WPRect;
+        }
+        canvas.drawPath(circlePath, circlePaint);
+
+        for (int i = 0; i < waypointsNumbers.length + 1; ++i) {
+            int circleCenterPoint = xStart + buttonSize / 2 + i * buttonSize;
+            String msg;
+            if(i < waypointsNumbers.length){
+                int wpNum = waypointsNumbers[i];
+                msg = String.valueOf(wpNum);
+            }else{
+                msg = "+";
+            }
+            canvas.drawText(msg, circleCenterPoint - 15, yPos + 15, circleTextPaint);
+        }
+
+    }
+
+    public Position getDialogPosition() {
+        return decidingIndexDialogPosition;
+    }
+
+    // TODO:  Abstract this to its own class
     // TODO: If no waypoints, auto set as number 1
     public void enableDialogDecidingIndexNumber(Position dialogPosition, MapNode clickedNode, Waypoint waypoint, int waypointCount) {
         isDialogUpdated = false;
@@ -166,6 +263,9 @@ public class LevelConstructsSprite implements ISprite {
         return dialogClickedNode;
     }
 
+    public void disableDialogSelectWaypoint() {
+        isWaypointChoiceDisplayed = false;
+    }
     public void disableDialogDecidingIndexNumber() {
         isDialogDisplayed = false;
         dialogIndexY = 0;

@@ -63,6 +63,17 @@ public class PlayerNav extends Navigation {
         wp.delete();
     }
 
+    public void removeWaypoint(Waypoint waypoint) {
+//        clearWaypoint(waypoint);
+//        route = reCalcRoute();
+        if(waypoint.getNextWP() == null){
+            deleteLast();
+        }else{
+            deleteNotLast(waypoint);
+        }
+        isPathDrawUpdated = false;
+    }
+    // TODO: Much of the below now seems to be redundant
     public void removeWaypoint(MapNode clickedNode) {
         // if no waypoints, return
         // if top waypoint, no stack, return
@@ -139,7 +150,7 @@ public class PlayerNav extends Navigation {
         }
         return ll;
     }
-
+    // TODO:  Encapsulate boolean flag into class with the route so any access will trigger the flag
     // Add waypoint at X location
     public void addWaypoint(MapNode clickedNode, int index) {
         if (index < 1 || index > waypoints.size() + 1) {
@@ -149,7 +160,9 @@ public class PlayerNav extends Navigation {
             addWaypoint(clickedNode);
             return;
         }
-        isPathDrawUpdated = false;
+        if(clickedNode.hasWaypointIndex(ID, index) || clickedNode.hasWaypointIndex(ID, index-1)){
+            return;
+        }
         int waypointCount = waypoints.size();
         int BSteps = waypointCount - index + 1;
         Waypoint wp = topWaypoint;
@@ -160,6 +173,7 @@ public class PlayerNav extends Navigation {
         Waypoint waypoint = new Waypoint(clickedNode, wp, ID);
         waypoints.put(waypoint.getID(), waypoint);
         route = reCalcRoute();
+        isPathDrawUpdated = false;
     }
 
     public void addWaypoint(MapNode clickedNode) {
@@ -168,15 +182,16 @@ public class PlayerNav extends Navigation {
             Log.d(GameView.TAG, "No path found!");
             return;
         }
-        isPathDrawUpdated = false;
         route.addAll(pathToTake);
 
         Waypoint waypoint = new Waypoint(
                 clickedNode,
                 topWaypoint,
                 ID);
-        topWaypoint = waypoint;
         waypoints.put(waypoint.getID(), waypoint);
+        topWaypoint = waypoint;
+        isPathDrawUpdated = false;
+
     }
 
     public void printDeets(String note) {
@@ -231,5 +246,6 @@ public class PlayerNav extends Navigation {
     protected UUID getID() {
         return ID;
     }
+
 }
 

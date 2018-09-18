@@ -50,6 +50,9 @@ public class MapNode {
             return 0;
         }
     }
+    public List<Waypoint> getWaypoints(UUID id){
+        return waypoints.get(id);
+    }
 
     public Waypoint getWaypoint(UUID id, int index) {
         return waypoints.get(id).get(index);
@@ -60,6 +63,17 @@ public class MapNode {
             waypoints.put(id, new ArrayList<Waypoint>());
         }
         waypoints.get(id).add(wp);
+    }
+    public boolean hasWaypointIndex(UUID id, int index){
+        if(!waypoints.containsKey(id)){
+            return false;
+        }
+        for (Waypoint wp : waypoints.get(id)){
+            if (wp.getWaypointIndex() == index){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void removeWaypoint(UUID id, int index) {
