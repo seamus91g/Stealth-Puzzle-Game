@@ -88,5 +88,14 @@ public class MapNode {
             }
         }
     }
+
+    public boolean hasNoWaypointsExcludingTop(PlayerSprite player) {
+        if(getWaypointCount(player.getID()) == 0      // if no waypoints
+                || ((getWaypointCount(player.getID()) == 1)     // if 1 waypoint, and equals top
+                    && (getWaypoint(player.getID(), 0).equals(player.getTopWaypoint())))){
+            return true;
+        }
+        return false;
+    }
 }
 

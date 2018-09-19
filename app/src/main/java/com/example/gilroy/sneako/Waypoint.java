@@ -93,16 +93,27 @@ public class Waypoint {
             wpOrderNumber = prev.wpOrderNumber + 1;
             if (prev.nextWP != null) {        // Inserting waypoint in middle of route
                 prev.nextWP.prevWP = this;
-                incrementSubsequentWpNumbers(prev.nextWP, wpOrderNumber + 1);
             }
             this.nextWP = prev.nextWP;
             prev.nextWP = this;
+            incrementSubsequentWpNumbers(nextWP, wpOrderNumber + 1);
         }
         node.addWaypoint(soldierID, this);      // TODO: does node really need to be a parameter .. ??
         calculateIndexDrawShfit();
     }
+    // TODO:  this is messy. Sort it out
+    public Waypoint(MapNode node, Waypoint prev, UUID soldierID, Waypoint nextWP){
+        this(node, prev, soldierID);
+        nextWP.prevWP = this;
+        this.nextWP = nextWP;
+        incrementSubsequentWpNumbers(nextWP, wpOrderNumber + 1);
+    }
 
-    public void incrementSubsequentWpNumbers(Waypoint next, int startingWPNumber) {
+    private void incrementSubsequentWpNumbers(Waypoint next, int startingWPNumber) {
+        if(next == null){
+            return;
+        }
+        // TODO:  tidy this. Do recursive call where you ++ the wpOrderNumber of each
         do {
             next.wpOrderNumber = startingWPNumber;
             next.updateWaypointText();

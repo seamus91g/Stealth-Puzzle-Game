@@ -29,18 +29,21 @@ class GameView extends SurfaceView implements
     LevelConstructsSprite level;
     PlayerSprite currentlyActive;
     List<PlayerSprite> allies = new ArrayList<>();
+    UIComponents uiComponents;
 
     public GameView(Context context, GameSetup gameSetup) {
         super(context);
-        // Initialise the map
         map = new MapSprite(gameSetup.wallmatrix, getResources());
         level = new LevelConstructsSprite(gameSetup.wallmatrix, map.getTileHeight());
-        sprites.put(map.getID(), map);
-        sprites.put(level.getID(), level);
+        uiComponents = new UIComponents(map.getTileHeight());
         getHolder().addCallback(this);
         thread = new MainThread(getHolder(), this);
         setFocusable(true);
+        // Everything is added to sprites in the order in which it should be drawn
+        sprites.put(map.getID(), map);
+        sprites.put(level.getID(), level);
         initialiseAllies(gameSetup.numAllies);
+        sprites.put(uiComponents.getID(), uiComponents);
     }
 
     private void initialiseAllies(int numAllies) {
@@ -63,8 +66,7 @@ class GameView extends SurfaceView implements
         }
         currentlyActive = active;
         currentlyActive.setActive();
-        level.disableDialogDecidingIndexNumber();
-        level.disableDialogSelectWaypoint();
+//        uiComponents.disableDialog();
     }
 
     public void update() {
@@ -135,9 +137,8 @@ class GameView extends SurfaceView implements
         if (mapScroll) {
             map.shiftCanvas(distanceX, distanceY);
             return false;
-        }
-        if (level.isDialogDisplayed()) {
-            level.shiftIndex(distanceY);
+        } else if (uiComponents.isDialogDisplayed()) {
+            uiComponents.adjust(distanceY);
         }
         return false;
     }
@@ -151,73 +152,35 @@ class GameView extends SurfaceView implements
     @Override
     public void onShowPress(MotionEvent e) {
         Log.d(TAG, "Action was onShowPress");
-
     }
 
     public void clearWaypoints() {
         currentlyActive.clearWaypoints();
     }
 
-    //  If waypointsCount == 0
-    //      boolIsEnteringWaypointNumber = true
-    //      display variable index counter, arrows
-    //      Listen for onScroll
-    //      If tap anywhere, set false
     @Override
     public void onLongPress(MotionEvent e) {
         Log.d(TAG, "Action was onLongPress");
         if (map.clickRegion(e).x == -1) {
             return;
         }
+        resetAction();
         MapNode clickedNode = level.getNode(map.clickRegion(e));
-        if (clickedNode.getWaypointCount(currentlyActive.getID()) == 0      // if no waypoints
-                || ((clickedNode.getWaypointCount(currentlyActive.getID()) == 1)     // if 1 waypoint, and equals top
-                    && (clickedNode.getWaypoint(currentlyActive.getID(), 0).equals(currentlyActive.getTopWaypoint())))) {
-            level.enableDialogDecidingIndexNumber(new Position(map.clickRegion(e), map.getTileHeight()),
+        if (clickedNode.hasNoWaypointsExcludingTop(currentlyActive)) {
+            uiComponents.enableWaypointPlaceUI(new Position(map.clickRegion(e), map.getTileHeight()),
                     clickedNode,
                     currentlyActive.getTopWaypoint(),
                     currentlyActive.getWaypoints().size());
-            return;
+        }else {
+            uiComponents.enableWaypointRemoveUI(new Position(map.clickRegion(e), map.getTileHeight()), clickedNode.getWaypoints(currentlyActive.getID()));
         }
-//        if () {
-//            return;
-//        }
-        level.enableRemoveWaypointDialog(new Position(map.clickRegion(e), map.getTileHeight()), clickedNode.getWaypoints(currentlyActive.getID()));
-
-        resetAction();
     }
 
     @Override
     public boolean onSingleTapUp(MotionEvent event) {
-        if (level.isDialogDisplayed()) {
-            // TODO: This should get disabled for click anywhere, including xml buttons
-            if (!level.wasCancelClicked(map.clickLocation(event.getX(), event.getY()))) {
-                Log.d(TAG, "Not cancelled!!");
-                currentlyActive.addWaypoint(level.getDialogClickedNode(), level.getDialogIndexNumber());
-            }
-            level.disableDialogDecidingIndexNumber();
-            resetAction();
-            return false;
-        }
-        if (level.isWPSelectDisplayed()) {
-            int choice = level.queryClick(map.clickLocation(event.getX(), event.getY()));
-            Log.d(TAG, "Choice!~" + choice);
-            level.disableDialogSelectWaypoint();
-            if (choice == LevelConstructsSprite.ADD_WAYPOINT) {
-                Log.d(TAG, "Add waypoint choosen!!!~");
-                level.enableDialogDecidingIndexNumber(level.getDialogPosition(),
-                        level.getDialogClickedNode(),
-                        currentlyActive.getTopWaypoint(),
-                        currentlyActive.getWaypoints().size());
-
-                return false;
-            } else if (choice >= 0 && choice < level.getDialogClickedNode().getWaypointCount(currentlyActive.getID())) {
-                currentlyActive.removeWaypoint(level.getDialogClickedNode().getWaypoints(currentlyActive.getID()).get(choice));
-
-                Log.d(TAG, "Valid Choice!~");
-                return false;
-            }
-            Log.d(TAG, "... UMMM ?!~");
+        // If UI component is displayed
+        if (uiComponents.isDialogDisplayed()) {
+            handleUIClick(new Position(map.clickLocation(event.getX(), event.getY())));
             return false;
         }
         if (map.clickRegion(event).x == -1) {
@@ -235,6 +198,32 @@ class GameView extends SurfaceView implements
             currentlyActive.addWaypoint(clickedNode);
         }
         return false;
+    }
+
+    private void handleUIClick(Position position) {
+        int choice = uiComponents.queryClick(position);
+        switch (choice) {
+            case UIComponents.SELECTION_COMPLETE:
+                currentlyActive.addWaypoint(uiComponents.getDialogClickedNode(), uiComponents.getValue());
+                uiComponents.disableDialog();
+                break;
+            case UIComponents.CANCEL_SELECTION:
+                uiComponents.disableDialog();
+                break;
+            case UIComponents.ADD_WAYPOINT:
+                uiComponents.enableWaypointPlaceUI(uiComponents.getDialogPosition(),
+                        uiComponents.getDialogClickedNode(),
+                        currentlyActive.getTopWaypoint(),
+                        currentlyActive.getWaypoints().size());
+                break;
+            case UIComponents.REMOVE_WAYPOINT:
+                currentlyActive.removeWaypoint(uiComponents.getDialogClickedNode().getWaypoint(currentlyActive.getID(), uiComponents.getValue()));
+                uiComponents.disableDialog();
+                break;
+            default:
+                break;
+        }
+        // TODO: UI should get disabled for click anywhere, including xml buttons
     }
 
 

@@ -165,12 +165,14 @@ public class PlayerNav extends Navigation {
         }
         int waypointCount = waypoints.size();
         int BSteps = waypointCount - index + 1;
-        Waypoint wp = topWaypoint;
+        Waypoint prev = topWaypoint;
+        Waypoint next = topWaypoint;
         while(BSteps > 0){
-            wp = wp.getPrevWP();
+            next = prev;
+            prev = prev.getPrevWP();
             --BSteps;
         }
-        Waypoint waypoint = new Waypoint(clickedNode, wp, ID);
+        Waypoint waypoint = new Waypoint(clickedNode, prev, ID, next);   // prev is null if inserting at 1, so must specify next
         waypoints.put(waypoint.getID(), waypoint);
         route = reCalcRoute();
         isPathDrawUpdated = false;
